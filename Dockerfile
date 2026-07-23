@@ -4,7 +4,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Stage 2: Build the application
 FROM node:22-alpine AS builder
