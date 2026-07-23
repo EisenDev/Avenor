@@ -30,6 +30,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgrespassword}@db:5432/${POSTGRES_DB:-avenor_db}?schema=public
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-super-secret-auth-key-change-in-prod}
+      AUTH_SECRET: ${AUTH_SECRET:-super-secret-auth-key-change-in-prod}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
