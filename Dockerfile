@@ -1,6 +1,7 @@
 # Stage 1: Install dependencies
 FROM node:22-alpine AS deps
 WORKDIR /app
+RUN apk add --no-cache openssl
 RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
@@ -9,6 +10,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 # Stage 2: Build the application
 FROM node:22-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache openssl
 RUN npm install -g pnpm
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -19,6 +21,7 @@ RUN pnpm build
 # Stage 3: Production runner
 FROM node:22-alpine AS runner
 WORKDIR /app
+RUN apk add --no-cache openssl
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
