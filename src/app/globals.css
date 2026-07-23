@@ -1,26 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* ============================================================
+   AVENOR — Global Design Tokens
+   Source of truth: docs/ui/design-tokens.md
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Colors: Neutral ─────────────────────────────────────── */
+  --color-bg-primary: #FAF8F5;
+  --color-surface: #F4F1EC;
+  --color-card: #FFFFFF;
+  --color-border: #E9E3DA;
+  --color-border-strong: #D4CDBF;
+  --color-border-subtle: #F0ECE6;
+  --color-border-hover: #C8BFB3;
+  --color-border-focus: #B56A45;
+  --color-muted: #F0ECE6;
+
+  /* ── Colors: Text ────────────────────────────────────────── */
+  --color-text-primary: #222222;
+  --color-text-secondary: #6B7280;
+  --color-text-disabled: #B0ABA4;
+  --color-text-inverse: #FFFFFF;
+
+  /* ── Colors: Brand ───────────────────────────────────────── */
+  --color-primary: #B56A45;
+  --color-primary-hover: #9F5A39;
+  --color-primary-active: #8A4C30;
+  --color-primary-subtle: #FAF0EB;
+  --color-primary-muted: #EDD9CF;
+  --color-secondary: #7ABF73;
+  --color-secondary-hover: #68A861;
+  --color-secondary-subtle: #EEF6EC;
+  --color-success: #6BBF71;
+  --color-success-subtle: #EDF7EE;
+  --color-warning: #D6A25E;
+  --color-warning-subtle: #FBF4E8;
+  --color-danger: #E07A7A;
+  --color-danger-subtle: #FCEEED;
+  --color-info: #6EA8D7;
+  --color-info-subtle: #EBF4FB;
+
+  /* ── Colors: Interactive ─────────────────────────────────── */
+  --color-focus-ring: #B56A45;
+  --color-overlay: rgba(34, 34, 34, 0.32);
+  --color-hover-bg: rgba(181, 106, 69, 0.06);
+  --color-active-bg: rgba(181, 106, 69, 0.10);
+
+  /* ── Typography ──────────────────────────────────────────── */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── Spacing ─────────────────────────────────────────────── */
+  --spacing-page-x: 32px;
+  --spacing-page-y: 32px;
+  --spacing-section: 48px;
+  --spacing-card-inner: 24px;
+  --spacing-card-gap: 16px;
+  --spacing-form-gap: 20px;
+
+  /* ── Border Radius ───────────────────────────────────────── */
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ─────────────────────────────────────────────── */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 4px 16px rgba(181, 106, 69, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-focus: 0 0 0 3px rgba(181, 106, 69, 0.20);
+  --shadow-primary-btn: 0 2px 8px rgba(181, 106, 69, 0.30);
+
+  /* ── Motion ──────────────────────────────────────────────── */
+  --duration-instant: 75ms;
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Layout ──────────────────────────────────────────────── */
+  --sidebar-width: 220px;
+  --header-height: 56px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Base Reset ──────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }
+
+/* ── Focus Visible ───────────────────────────────────────── */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Reduced Motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 75ms !important;
+    transition-duration: 75ms !important;
+  }
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-up {
+  animation: fadeUp var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--duration-normal) var(--ease-out) both;
 }

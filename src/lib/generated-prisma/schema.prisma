@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/lib/generated-prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  applications Application[]
+  documents    Document[]
+  expenses     Expense[]
+  budget       UserBudget?
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum ApplicationStatus {
+  WISHLIST
+  APPLIED
+  SCREENING
+  INTERVIEWING
+  OFFER
+  ACCEPTED
+  REJECTED
+  GHOSTED
+  WITHDRAWN
+}
+
+model Application {
+  id              String            @id @default(cuid())
+  userId          String
+  company         String
+  role            String
+  status          ApplicationStatus @default(APPLIED)
+  location        String?
+  url             String?
+  salary          Int?
+  notes           String?           @db.Text
+  appliedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  recruiterName   String?
+  recruiterEmail  String?
+  recruiterPhone  String?
+  interviewLink   String?
+  resumeName      String?
+  coverLetterName String?
+  logoUrl         String?
+  resumePath      String?
+  coverLetterPath String?
+  priority        String            @default("MEDIUM")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interviews     Interview[]
+  emails         EmailActivity[]
+  timelineEvents TimelineEvent[]
+  documents      Document[]
+
+  @@map("applications")
+}
+
+model TimelineEvent {
+  id            String   @id @default(cuid())
+  applicationId String
+  title         String
+  description   String?  @db.Text
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("timeline_events")
+}
+
+enum InterviewType {
+  PHONE
+  TECHNICAL
+  BEHAVIORAL
+  SYSTEM_DESIGN
+  HR
+  FINAL
+  ONSITE
+  CUSTOM
+}
+
+model Interview {
+  id            String        @id @default(cuid())
+  applicationId String
+  type          InterviewType @default(PHONE)
+  customType    String?
+  scheduledAt   DateTime
+  location      String?
+  notes         String?       @db.Text
+  interviewer   String?
+  link          String?
+  checklist     String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("interviews")
+}
+
+enum EmailType {
+  INTERVIEW_INVITATION
+  ASSESSMENT_INVITE
+  REJECTION
+  OFFER
+  FOLLOW_UP
+  OTHER
+}
+
+model EmailActivity {
+  id            String    @id @default(cuid())
+  applicationId String
+  subject       String
+  type          EmailType @default(OTHER)
+  receivedAt    DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("email_activities")
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  description   String?  @db.Text
+  path          String // Public URL or relative path
+  fileSize      String?
+  fileType      String // "resume" | "coverletter" | "other"
+  active        Boolean  @default(false)
+  aiScore       String? // e.g. "85%"
+  aiFeedback    String?  @db.Text
+  applicationId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@map("documents")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime @default(now())
+  category    String // e.g., "Transportation", "Food", "Coffee", "Certification", "Internet", "Equipment", "Printing", "Subscription"
+  description String
+  amount      Float
+  receiptPath String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}
+
+model UserBudget {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  limit     Float    @default(500.00)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_budgets")
+}
