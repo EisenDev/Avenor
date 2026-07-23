@@ -395,6 +395,12 @@ export async function getNextInterviewQuestionWithGemini(
   }
 
   try {
+    // Extract all previously asked interviewer questions to prevent repetition
+    const askedQuestions = history
+      .filter(h => h.role === 'assistant')
+      .map(h => `- ${h.content}`)
+      .join('\n')
+
     const historyPrompt = history
       .map(h => `${h.role === 'user' ? 'Candidate' : 'Interviewer'}: ${h.content}`)
       .join('\n')
@@ -409,17 +415,20 @@ Job Context:
 Full Interview Transcript so far:
 ${historyPrompt || "No history yet. This is the start of the interview."}
 
-Tasks:
-1. If history is empty, introduce yourself briefly as the Avenor AI Interviewer, welcome the candidate to their ${interviewType} interview, and ask a relevant initial icebreaker question.
-2. If the candidate just responded, evaluate their answer and ask exactly one natural, engaging follow-up question.
-   - Alternately push them to expand on details or ask about specific tech/behavioral skills from the job description.
-   - For TECHNICAL interviews, focus on coding standards, system design patterns, or technical experience.
-   - For HR interviews, ask behavioral questions (e.g. teamwork, conflict resolution, prioritizing tasks).
-   - For BOTH, blend them naturally.
-   - Do not ask multiple questions in a single turn. Keep questions concise and focused.
-3. If the interview has reached a natural conclusion (usually 5 to 6 questions) or the candidate expresses a desire to stop, set isEnded to true and output an empty question.
+${askedQuestions ? `Questions you have ALREADY asked (DO NOT repeat or paraphrase any of these):\n${askedQuestions}` : ''}
 
-You must respond in strict JSON format matching this schema:
+Instructions:
+1. If the transcript is empty, introduce yourself briefly as the Avenor AI Interviewer, welcome the candidate to their ${interviewType} interview for the ${role} role at ${company}, and ask one relevant opening question.
+2. After each candidate response, ask exactly ONE unique follow-up question that has NOT been asked before.
+   - Each question must be meaningfully different from all previously asked questions in topic and phrasing.
+   - Never repeat a question concept even if phrased differently.
+   - For TECHNICAL: cover system design, coding patterns, debugging, performance, architecture decisions.
+   - For HR/BEHAVIORAL: cover teamwork, leadership, conflict resolution, growth, motivation.
+   - Vary the difficulty and domain to get a full picture of the candidate.
+   - Keep each question concise and focused on a single aspect.
+3. End the interview (isEnded: true) after 5-6 unique questions OR if the candidate asks to stop.
+
+Respond ONLY in strict JSON matching this schema:
 {
   "question": string,
   "isEnded": boolean

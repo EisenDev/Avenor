@@ -289,6 +289,21 @@ export async function getInterviewEvaluationAction(
       history
     )
 
+    // Save session to database for history
+    await db.mockInterviewSession.create({
+      data: {
+        applicationId,
+        userId: session.user.id,
+        interviewType,
+        score: evaluation.score,
+        decision: evaluation.decision,
+        strengths: JSON.stringify(evaluation.strengths),
+        weaknesses: JSON.stringify(evaluation.weaknesses),
+        tips: JSON.stringify(evaluation.tips),
+        transcript: JSON.stringify(history),
+      }
+    })
+
     // Add to timeline events for this application
     await db.timelineEvent.create({
       data: {
@@ -308,3 +323,39 @@ export async function getInterviewEvaluationAction(
     return { success: false, error: 'Failed to evaluate interview.' }
   }
 }
+
+/**
+ * Fetches all past mock interview sessions for a given application.
+ */
+export async function getInterviewHistoryAction(applicationId: string): Promise<ActionResult> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthorized.' }
+  }
+
+  try {
+    const sessions = await db.mockInterviewSession.findMany({
+      where: { applicationId, userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return {
+      success: true,
+      data: sessions.map(s => ({
+        id: s.id,
+        interviewType: s.interviewType,
+        score: s.score,
+        decision: s.decision,
+        strengths: JSON.parse(s.strengths),
+        weaknesses: JSON.parse(s.weaknesses),
+        tips: JSON.parse(s.tips),
+        transcript: JSON.parse(s.transcript),
+        createdAt: s.createdAt,
+      }))
+    }
+  } catch (error) {
+    console.error('Error fetching interview history:', error)
+    return { success: false, error: 'Failed to fetch interview history.' }
+  }
+}
+
