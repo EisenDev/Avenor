@@ -5,9 +5,16 @@ on:
     branches:
       - main
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/eisendev/avenor
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -32,8 +39,19 @@ jobs:
       - name: TypeScript Check
         run: pnpm exec tsc --noEmit
 
-      - name: Next.js Compile Build
-        run: pnpm build
+      - name: Log in to the Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:latest
 
   deploy:
     needs: build-and-test
@@ -50,5 +68,5 @@ jobs:
           script: |
             cd /home/${{ secrets.SERVER_USER }}/avenor
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            docker compose pull
+            docker compose up -d
