@@ -17,15 +17,14 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  accounts             Account[]
-  sessions             Session[]
-  applications         Application[]
-  documents            Document[]
-  expenses             Expense[]
-  budget               UserBudget?
-  offers               Offer[]
-  goal                 UserGoal?
-  mockInterviewSessions MockInterviewSession[]
+  accounts     Account[]
+  sessions     Session[]
+  applications Application[]
+  documents    Document[]
+  expenses     Expense[]
+  budget       UserBudget?
+  offers       Offer[]
+  goal         UserGoal?
 
   @@map("users")
 }
@@ -106,13 +105,12 @@ model Application {
   coverLetterPath  String?
   priority         String            @default("MEDIUM")
 
-  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  interviews            Interview[]
-  emails                EmailActivity[]
-  timelineEvents        TimelineEvent[]
-  documents             Document[]
-  offers                Offer[]
-  mockInterviewSessions MockInterviewSession[]
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interviews     Interview[]
+  emails         EmailActivity[]
+  timelineEvents TimelineEvent[]
+  documents      Document[]
+  offers         Offer[]
 
   @@map("applications")
 }
@@ -270,23 +268,4 @@ model UserGoal {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_goals")
-}
-
-model MockInterviewSession {
-  id            String   @id @default(cuid())
-  applicationId String
-  userId        String
-  interviewType String
-  score         Int
-  decision      String   // "Hired" | "Not Hired"
-  strengths     String   @db.Text // JSON array
-  weaknesses    String   @db.Text // JSON array
-  tips          String   @db.Text // JSON array
-  transcript    String   @db.Text // JSON array of {role, content}
-  createdAt     DateTime @default(now())
-
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("mock_interview_sessions")
 }
