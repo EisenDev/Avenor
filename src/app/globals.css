@@ -158,3 +158,34 @@ body {
 .animate-fade-in {
   animation: fadeIn var(--duration-normal) var(--ease-out) both;
 }
+
+/* ── Responsive: Mobile layout ─────────────────────────────
+   All dashboard pages use marginLeft: var(--sidebar-width) inline.
+   On mobile (≤768px) the sidebar becomes an off-canvas drawer so
+   we override those inline styles globally here.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Zero out the sidebar offset on any element that uses --sidebar-width */
+  [style*="--sidebar-width"] {
+    margin-left: 0 !important;
+  }
+
+  /* Reduce horizontal page padding on small screens */
+  :root {
+    --spacing-page-x: 16px;
+    --spacing-page-y: 20px;
+  }
+
+  /* Give main content area breathing room below the fixed hamburger/header */
+  header {
+    padding-left: 56px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-page-x: 12px;
+    --spacing-page-y: 16px;
+  }
+}
+

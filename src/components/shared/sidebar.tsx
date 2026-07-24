@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -15,6 +16,8 @@ import {
   Target,
   Settings,
   Sparkles,
+  Menu,
+  X,
 } from 'lucide-react'
 
 const navItems = [
@@ -36,23 +39,27 @@ const bottomItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [isOpen, setIsOpen] = useState(false)
 
-  return (
-    <aside
-      style={{
-        width: 'var(--sidebar-width)',
-        background: 'var(--color-surface)',
-        borderRight: '1px solid var(--color-border)',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        height: '100vh',
-        zIndex: 200,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-    >
+  // Close drawer on navigation
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  // Prevent body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
+  const navContent = (
+    <>
       {/* Logo */}
       <div
         style={{
@@ -63,19 +70,30 @@ export function Sidebar() {
           borderBottom: '1px solid var(--color-border)',
           gap: 10,
           flexShrink: 0,
+          justifyContent: 'space-between',
         }}
       >
-        <img src="/avenor-logo.png" alt="Avenor Logo" style={{ width: 24, height: 24, objectFit: 'contain' }} />
-        <span
-          style={{
-            fontSize: 15,
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-            letterSpacing: '-0.01em',
-          }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/avenor-logo.png" alt="Avenor Logo" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+          <span
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            Avenor
+          </span>
+        </div>
+        {/* Close button — only visible on mobile */}
+        <button
+          className="sidebar-close-btn"
+          onClick={() => setIsOpen(false)}
+          aria-label="Close navigation"
         >
-          Avenor
-        </span>
+          <X size={18} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -103,14 +121,14 @@ export function Sidebar() {
                 alignItems: 'center',
                 gap: 10,
                 padding: '0 12px',
-                height: 36,
+                height: 40,
                 borderRadius: 'var(--radius-md)',
                 textDecoration: 'none',
                 fontSize: 14,
                 fontWeight: isActive ? 600 : 500,
                 color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                 background: isActive ? 'var(--color-active-bg)' : 'transparent',
-                transition: `background ${120}ms, color ${120}ms`,
+                transition: `background 120ms, color 120ms`,
                 position: 'relative',
               }}
               className="sidebar-item"
@@ -161,7 +179,7 @@ export function Sidebar() {
                 alignItems: 'center',
                 gap: 10,
                 padding: '0 12px',
-                height: 36,
+                height: 40,
                 borderRadius: 'var(--radius-md)',
                 textDecoration: 'none',
                 fontSize: 14,
@@ -169,6 +187,7 @@ export function Sidebar() {
                 color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                 background: isActive ? 'var(--color-active-bg)' : 'transparent',
               }}
+              className="sidebar-item"
             >
               <Icon size={16} strokeWidth={1.5} />
               <span>{item.label}</span>
@@ -216,8 +235,131 @@ export function Sidebar() {
           </div>
         </Link>
       </div>
+    </>
+  )
+
+  return (
+    <>
+      {/* ── Mobile Hamburger Button ── */}
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setIsOpen(true)}
+        aria-label="Open navigation menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* ── Mobile Overlay Backdrop ── */}
+      {isOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ── Desktop Sidebar (always visible ≥ 768px) ── */}
+      <aside
+        className="sidebar-desktop"
+        style={{
+          background: 'var(--color-surface)',
+          borderRight: '1px solid var(--color-border)',
+        }}
+      >
+        {navContent}
+      </aside>
+
+      {/* ── Mobile Drawer (slides in < 768px) ── */}
+      <aside
+        className={`sidebar-mobile-drawer ${isOpen ? 'open' : ''}`}
+        style={{
+          background: 'var(--color-surface)',
+          borderRight: '1px solid var(--color-border)',
+        }}
+      >
+        {navContent}
+      </aside>
 
       <style>{`
+        /* ── Sidebar: Desktop ── */
+        .sidebar-desktop {
+          width: var(--sidebar-width);
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100vh;
+          z-index: 200;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        /* ── Sidebar: Mobile Drawer ── */
+        .sidebar-mobile-drawer {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100vh;
+          width: 280px;
+          z-index: 1000;
+          flex-direction: column;
+          overflow: hidden;
+          transform: translateX(-100%);
+          transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sidebar-mobile-drawer.open {
+          transform: translateX(0);
+        }
+
+        /* ── Overlay ── */
+        .sidebar-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.45);
+          backdrop-filter: blur(3px);
+          z-index: 999;
+        }
+
+        /* ── Hamburger button ── */
+        .mobile-menu-btn {
+          display: none;
+          position: fixed;
+          top: 12px;
+          left: 12px;
+          z-index: 500;
+          width: 36px;
+          height: 36px;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--color-border);
+          background: var(--color-card);
+          color: var(--color-text-primary);
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: var(--shadow-sm);
+        }
+
+        /* ── Close button inside drawer ── */
+        .sidebar-close-btn {
+          display: none;
+          width: 32px;
+          height: 32px;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--color-border);
+          background: transparent;
+          color: var(--color-text-secondary);
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 120ms;
+        }
+        .sidebar-close-btn:hover {
+          background: var(--color-hover-bg);
+        }
+
+        /* ── Nav hover states ── */
         .sidebar-item:hover {
           background: var(--color-hover-bg) !important;
           color: var(--color-text-primary) !important;
@@ -226,7 +368,26 @@ export function Sidebar() {
           background: var(--color-active-bg) !important;
           color: var(--color-primary) !important;
         }
+
+        /* ── Mobile breakpoint ── */
+        @media (max-width: 768px) {
+          .sidebar-desktop {
+            display: none !important;
+          }
+          .sidebar-mobile-drawer {
+            display: flex;
+          }
+          .sidebar-overlay {
+            display: block;
+          }
+          .mobile-menu-btn {
+            display: flex;
+          }
+          .sidebar-close-btn {
+            display: flex;
+          }
+        }
       `}</style>
-    </aside>
+    </>
   )
 }
